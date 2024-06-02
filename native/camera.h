@@ -16,6 +16,7 @@ int camera_get_width(void *obj);
 int camera_get_height(void *obj);
 
 void camera_flip(void *obj, int flip_lr, int flip_ud);
+void camera_threshold(void *obj, int threshold);
 
 void camera_delete_all();
 
@@ -47,6 +48,7 @@ public:
     int getHeight();
 
     int flip(bool flip_lr = true, bool flip_ud = false);
+    int threshold_value(int threshold);
 
 private:
 
@@ -59,6 +61,7 @@ private:
     unsigned long counter;
     float fps;
     bool flip_lr, flip_ud;
+    int threshold;
 
     std::recursive_mutex guard;
     std::thread worker;

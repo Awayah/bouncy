@@ -7,27 +7,21 @@
 [ext_resource path="res://player.tscn" type="PackedScene" id=5]
 
 [sub_resource type="Environment" id=1]
-
 background_mode = 4
 
 [sub_resource type="Gradient" id=2]
-
 colors = PoolColorArray( 0, 0, 0, 0.780392, 0, 0, 0, 0.913725 )
 
 [sub_resource type="GradientTexture" id=3]
-
 gradient = SubResource( 2 )
 width = 128
 
 [sub_resource type="CanvasItemMaterial" id=4]
 
-
 [sub_resource type="RectangleShape2D" id=5]
-
 extents = Vector2( 0.5, 0.5 )
 
 [sub_resource type="Animation" id=6]
-
 resource_name = "game_start"
 length = 5.0
 tracks/0/type = "value"
@@ -54,48 +48,11 @@ tracks/1/keys = {
 "update": 0,
 "values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
 }
-tracks/2/type = "value"
-tracks/2/path = NodePath("game/greeting:modulate")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/keys = {
-"times": PoolRealArray( 0, 0.5 ),
-"transitions": PoolRealArray( 1, 1 ),
-"update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
-}
 
 [sub_resource type="Animation" id=7]
-
 resource_name = "greeting_blink"
 length = 4.0
 loop = true
-tracks/0/type = "value"
-tracks/0/path = NodePath("game/greeting/Label:custom_colors/font_color")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 2, 3.9 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Color( 1, 0, 0, 1 ), Color( 0.4, 0.4, 0.4, 1 ), Color( 1, 0, 0, 1 ) ]
-}
-tracks/1/type = "value"
-tracks/1/path = NodePath("game/greeting/activate:color")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"times": PoolRealArray( 0, 2, 3.9 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Color( 0.517647, 0.0745098, 0.0745098, 1 ), Color( 0.376471, 0.376471, 0.376471, 1 ), Color( 0.517647, 0.0745098, 0.0745098, 1 ) ]
-}
 
 [node name="root" type="Node2D"]
 script = ExtResource( 1 )
@@ -154,31 +111,19 @@ scale = Vector2( 4.32, 4.6 )
 
 [node name="player" parent="game" instance=ExtResource( 5 )]
 
-[node name="greeting" type="Node2D" parent="game"]
-
-[node name="Label" type="Label" parent="game/greeting"]
-margin_left = -21.1647
-margin_top = 81.3666
-margin_right = 520.835
-margin_bottom = 169.367
-rect_scale = Vector2( 1.26726, 1.26726 )
-custom_colors/font_color = Color( 0.774305, 0.150464, 0.150464, 1 )
-text = "Place your head in rectangle to start the game"
-align = 1
-
-[node name="activate" type="Polygon2D" parent="game/greeting"]
-position = Vector2( 320, 240 )
-color = Color( 0.464542, 0.188095, 0.188095, 1 )
-invert_enable = true
-invert_border = 10.0
-polygon = PoolVector2Array( -60, -60, 60, -60, 60, 60, -60, 60 )
-
 [node name="animation" type="AnimationPlayer" parent="."]
 anims/game_start = SubResource( 6 )
 anims/greeting_blink = SubResource( 7 )
 
+[node name="HSlider" type="HSlider" parent="."]
+margin_left = 108.0
+margin_top = 398.0
+margin_right = 540.0
+margin_bottom = 420.0
+max_value = 255.0
+
 [connection signal="camera_frame" from="." to="camera" method="_on_root_camera_frame"]
 [connection signal="camera_ready" from="." to="camera" method="_on_root_camera_ready"]
 [connection signal="force" from="." to="game/player" method="_on_root_force"]
-[connection signal="game_start" from="." to="game/player" method="_on_root_game_start"]
 [connection signal="game_start" from="." to="shadow" method="_on_root_game_start"]
+[connection signal="game_start" from="." to="game/player" method="_on_root_game_start"]

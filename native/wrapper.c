@@ -25,6 +25,7 @@ godot_variant _camera_open(godot_object *p_instance, void *p_method_data, void *
 godot_variant _camera_set_default(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args);
 godot_variant _camera_detect_face(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args);
 godot_variant _camera_compute_flow(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args);
+godot_variant _camera_threshold(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args);
 
 void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *p_options) {
 	api = p_options->api_struct;
@@ -92,7 +93,12 @@ void GDN_EXPORT godot_nativescript_init(void *p_handle) {
 
 	nativescript_api->godot_nativescript_register_method(p_handle, "Camera", "flip", attributes, flip);
 
-	godot_instance_method detect_face = { NULL, NULL, NULL };
+	godot_instance_method threshold = { NULL, NULL, NULL };
+    threshold.method = &_camera_threshold;
+
+    nativescript_api->godot_nativescript_register_method(p_handle, "Camera", "threshold", attributes, threshold);
+    
+    godot_instance_method detect_face = { NULL, NULL, NULL };
 	detect_face.method = &_camera_detect_face;
 
 	nativescript_api->godot_nativescript_register_method(p_handle, "Camera", "detect_face", attributes, detect_face);
@@ -252,6 +258,24 @@ godot_variant _camera_flip(godot_object *p_instance, void *p_method_data, void *
     api->godot_variant_new_bool(&res, GODOT_TRUE);
 
 	return res;
+}
+
+godot_variant _camera_threshold(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args) {
+
+    godot_variant res;
+    camera_data_struct * user_data = (camera_data_struct *) p_user_data;
+
+    int slider = 0;
+
+    if (p_num_args > 0) {
+        slider = api->godot_variant_as_int(p_args[0]);
+    }
+
+    camera_threshold(user_data->camera, slider);
+
+    api->godot_variant_new_bool(&res, GODOT_TRUE);
+
+    return res;
 }
 
 

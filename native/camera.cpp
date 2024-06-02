@@ -7,7 +7,7 @@
 #include "camera.h"
 
 
-Camera::Camera(int camera) : fps(30), flip_lr(false), flip_ud(false) {
+Camera::Camera(int camera) : fps(30), flip_lr(false), flip_ud(false), threshold(127){
 
     capture.open(camera);
 
@@ -91,6 +91,13 @@ int Camera::flip(bool flip_lr, bool flip_ud) {
 
 }
 
+int Camera::threshold_value(int threshold) {
+
+    this->threshold = threshold;
+    return threshold;
+
+}
+
 void Camera::loop() {
 
     while (true) {
@@ -111,7 +118,21 @@ void Camera::loop() {
                 int code = flip_lr ? (flip_ud ? -1 : 1) : 0;
                 cv::flip(frame, frame, code);
             }
+            cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
+            
+            // Apply thresholding
+            double maxValue = 255;       // Maximum pixel value after thresholding
+            int thresholdType = cv::THRESH_BINARY; // Threshold type (binary thresholding)
+            double thresholdValue = this->threshold; // Threshold value
 
+            if (thresholdValue > 0) {
+                cv::threshold(frame, frame, (double)thresholdValue, maxValue, thresholdType);
+            }
+            else {
+                cv::adaptiveThreshold(frame, frame, maxValue, cv::ADAPTIVE_THRESH_GAUSSIAN_C, thresholdType, 91, 4);
+            }
+
+            
             counter++;
 
         }
@@ -125,8 +146,8 @@ void Camera::loop() {
         std::this_thread::sleep_for(remaining);
 
     }
-
 }
+
 
 
 static std::map<int, std::weak_ptr<Camera> > cameras;
@@ -233,5 +254,10 @@ void camera_flip(void *obj, int flip_lr, int flip_ud) {
     user_data->flip(flip_lr, flip_ud);
 }
 
+void camera_threshold(void *obj, int threshold) {
 
+    SharedCamera user_data = *((SharedCamera*) obj);
+
+    user_data->threshold_value(threshold);
+}
 

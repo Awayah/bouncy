@@ -51,8 +51,9 @@ public:
     int threshold_value(int threshold);
 
 private:
-
     void loop();
+    void computeThreshold(cv::Mat* frame_out);
+    void processFrame(cv::Mat& frame);
 
 	VideoCapture capture;
     Mat frame;

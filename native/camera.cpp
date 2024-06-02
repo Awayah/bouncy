@@ -6,7 +6,6 @@
 
 #include "camera.h"
 
-
 Camera::Camera(int camera) : fps(30), flip_lr(false), flip_ud(false), threshold(127){
 
     capture.open(camera);
@@ -118,19 +117,11 @@ void Camera::loop() {
                 int code = flip_lr ? (flip_ud ? -1 : 1) : 0;
                 cv::flip(frame, frame, code);
             }
-            cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
             
             // Apply thresholding
-            double maxValue = 255;       // Maximum pixel value after thresholding
-            int thresholdType = cv::THRESH_BINARY; // Threshold type (binary thresholding)
-            double thresholdValue = this->threshold; // Threshold value
+            this->computeThreshold(&frame);
 
-            if (thresholdValue > 0) {
-                cv::threshold(frame, frame, (double)thresholdValue, maxValue, thresholdType);
-            }
-            else {
-                cv::adaptiveThreshold(frame, frame, maxValue, cv::ADAPTIVE_THRESH_GAUSSIAN_C, thresholdType, 91, 4);
-            }
+            this->processFrame(frame);
 
             
             counter++;
@@ -261,3 +252,68 @@ void camera_threshold(void *obj, int threshold) {
     user_data->threshold_value(threshold);
 }
 
+void Camera::computeThreshold(cv::Mat* frame_out)
+{
+    cv::cvtColor(*frame_out, *frame_out, COLOR_BGR2GRAY);
+
+    if (this->threshold == 0)
+    {
+        cv::adaptiveThreshold(*frame_out, *frame_out, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 33, 5);
+    }
+    else {
+        cv::threshold(*frame_out, *frame_out, this->threshold, 255, THRESH_BINARY);
+    }
+}
+
+
+void Camera::processFrame(cv::Mat& frame) {
+
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(frame, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+    if (frame.channels() == 1) {
+    cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);}
+
+    for (size_t i = 0; i < contours.size(); i++) {
+        std::vector<cv::Point> approx;
+        cv::approxPolyDP(contours[i], approx, cv::arcLength(contours[i], true) * 0.02, true);
+
+         // Skip polygons with more or less than 4 corners
+        if (approx.size() != 4) {
+            continue;
+        }
+
+        // Compute bounding box
+        cv::Rect boundingBox = cv::boundingRect(approx);
+
+        // Skip too small bounding boxes
+        if (boundingBox.width < 20 || boundingBox.height < 20) { // Experiment with these values
+            continue;
+        }
+
+        // Draw contours and bounding box
+        cv::drawContours(frame, std::vector<std::vector<cv::Point>>{approx}, -1, cv::Scalar(0, 0, 255), 3);
+        // Draw bounding box with red lines using cv::polylines
+        std::vector<cv::Point> points = {boundingBox.tl(), cv::Point(boundingBox.br().x, boundingBox.tl().y), boundingBox.br(), cv::Point(boundingBox.tl().x, boundingBox.br().y)};
+        cv::polylines(frame, points, true, cv::Scalar(255, 0, 0), 2);
+
+        // Subdivide each edge into 7 parts of equal length
+        for (int i = 0; i < 4; i++) {
+            cv::Point p1 = points[i];
+            cv::Point p2 = points[(i+1)%4];
+            std::vector<cv::Point> subdividedPoints;
+
+            for (int j = 0; j <= 7; j++) {
+                int x = p1.x + j * (p2.x - p1.x) / 7;
+                int y = p1.y + j * (p2.y - p1.y) / 7;
+                subdividedPoints.push_back(cv::Point(x, y));
+            }
+
+            // Draw a small circle around each of the dividing points
+            for (const cv::Point& p : subdividedPoints) {
+                cv::circle(frame, p, 3, cv::Scalar(0, 255, 0), -1); // Draw circles in green
+            }
+        }
+    }
+}

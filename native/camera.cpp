@@ -6,6 +6,20 @@
 
 #include "camera.h"
 
+// Define subpixSampleSafe function
+int subpixSampleSafe(const cv::Mat &pSrc, const cv::Point2f &p) {
+    int x = int( floorf ( p.x ) );
+    int y = int( floorf ( p.y ) );
+    if ( x < 0 || x >= pSrc.cols - 1 || y < 0 || y >= pSrc.rows - 1 ) return 127;
+    int dx = int ( 256 * ( p.x - floorf ( p.x ) ) );
+    int dy = int ( 256 * ( p.y - floorf ( p.y ) ) );
+    unsigned char* i = ( unsigned char* ) ( ( pSrc.data + y * pSrc.step ) + x );
+    int a = i[ 0 ] + ( ( dx * ( i[ 1 ] - i[ 0 ] ) ) >> 8 );
+    i += pSrc.step;
+    int b = i[ 0 ] + ( ( dx * ( i[ 1 ] - i[ 0 ] ) ) >> 8 );
+    return a + ( ( dy * ( b - a) ) >> 8 );
+}
+
 Camera::Camera(int camera) : fps(30), flip_lr(false), flip_ud(false), threshold(127){
 
     capture.open(camera);
@@ -315,5 +329,7 @@ void Camera::processFrame(cv::Mat& frame) {
                 cv::circle(frame, p, 3, cv::Scalar(0, 255, 0), -1); // Draw circles in green
             }
         }
+
+        
     }
 }

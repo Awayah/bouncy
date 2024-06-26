@@ -34,7 +34,13 @@ void camera_set_default(int id);
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
-
+struct StripDimensions {
+    int stripLength;
+    int nStop;
+    int nStart;
+    Point2f stripeVecX;
+    Point2f stripeVecY;
+};
 class Camera {
 public:
 
@@ -50,10 +56,14 @@ public:
     int flip(bool flip_lr = true, bool flip_ud = false);
     int threshold_value(int threshold);
 
+    // int getFirstStripSizeWidth();
+    // int getFirstStripSizeHeight();
+
 private:
     void loop();
     void computeThreshold(cv::Mat* frame_out);
     void processFrame(cv::Mat& frame);
+    // void computeStrip(cv::Point* center_point, StripDimensions* strip, cv::Mat* image_pixel_strip);
 
 	VideoCapture capture;
     Mat frame;
